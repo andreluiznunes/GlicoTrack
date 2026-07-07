@@ -54,7 +54,7 @@ export async function signUp(_prevState: ActionState, formData: FormData): Promi
     password,
     options: {
       data: { full_name: fullName, role },
-      emailRedirectTo: `${siteUrl()}/auth/confirm`,
+      emailRedirectTo: `${siteUrl()}/auth/callback?next=/`,
     },
   });
 
@@ -114,7 +114,7 @@ export async function requestPasswordReset(
   // Não revelamos ao usuário se o e-mail existe ou não na base — sempre
   // seguimos para a tela "verifique seu e-mail", só logamos erro inesperado.
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${siteUrl()}/auth/confirm`,
+    redirectTo: `${siteUrl()}/auth/callback?next=/redefinir-senha`,
   });
 
   if (error) {

@@ -21,26 +21,21 @@ usam `if not exists`/tratamento de erro de duplicidade.
 
 Em **Authentication → URL Configuration**:
 - **Site URL**: `http://localhost:3000` (trocar pelo domínio da Vercel quando for pra produção)
-- **Redirect URLs**: adicionar `http://localhost:3000/auth/confirm` (e o equivalente em produção depois)
+- **Redirect URLs**: adicionar `http://localhost:3000/**` (wildcard — cobre `/auth/callback` com
+  qualquer query string; usar wildcard evita ter que listar cada variação de URL)
 
 Em **Authentication → Providers → Email**: confirme que "Confirm email" está **ativado**
-(é o padrão em projetos novos) — o app depende da rota `/auth/confirm` para validar o link
-enviado por e-mail.
+(é o padrão em projetos novos).
 
-**Passo obrigatório — editar os templates de e-mail** (`Authentication → Email Templates`):
-por padrão, o Supabase envia um link `{{ .ConfirmationURL }}` que aponta para o próprio domínio
-do Supabase. Como este app usa uma rota própria (`/auth/confirm`) para validar o token, é
-preciso editar dois templates para montar o link manualmente com `token_hash`/`type`/`next`:
+**Não é necessário editar os templates de e-mail.** O app usa o link padrão do Supabase
+(`{{ .ConfirmationURL }}`, sem customização — útil em planos onde a edição de template não está
+disponível). O link padrão redireciona para `/auth/callback`, uma página client-side
+(`src/app/auth/callback/page.tsx` + `src/components/AuthCallbackHandler.tsx`) que processa a
+confirmação no navegador (cobre tanto o formato `?code=` quanto `#access_token=...`, dependendo
+de como o Supabase gerar o link) e só então redireciona para dentro do app.
 
-- **Confirm signup**: troque o `href` do link de confirmação por
-  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/`
-- **Reset Password**: troque o `href` do link por
-  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/redefinir-senha`
-
-Sem essa edição, clicar no link do e-mail leva a uma página do Supabase em vez de voltar
-para o app — o cadastro/redefinição de senha parece "não funcionar".
-
-Opcional: no mesmo lugar, também dá para traduzir o texto dos templates para PT-BR.
+Opcional: em **Authentication → Email Templates**, se algum dia tiver acesso, dá pra traduzir o
+texto dos e-mails para PT-BR (não precisa mexer no link/`href`).
 
 ## Depois de mudar o schema
 
