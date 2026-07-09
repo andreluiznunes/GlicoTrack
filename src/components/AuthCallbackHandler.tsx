@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -8,8 +8,16 @@ export function AuthCallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState(false);
+  // O código/token do link só pode ser trocado por sessão uma vez. Em dev, o
+  // Strict Mode do React dispara este efeito duas vezes de propósito — sem
+  // essa trava, a segunda chamada falha (código já usado) e sobrescreve o
+  // sucesso da primeira com "link inválido".
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
     const supabase = createClient();
     const next = searchParams.get("next") ?? "/";
     const code = searchParams.get("code");
