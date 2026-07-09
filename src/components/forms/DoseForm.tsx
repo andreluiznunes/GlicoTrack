@@ -1,13 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { SubmitButton } from "./SubmitButton";
 import { FormError } from "./FormError";
 import { useLocalDatetimeSubmit } from "./useLocalDatetimeSubmit";
+import { MEDICATION_GROUPS, ALL_MEDICATIONS } from "@/lib/medicationOptions";
 import type { ActionState } from "@/actions/doses";
 
 const inputClass =
   "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900";
+
+const OTHER_VALUE = "__outro__";
 
 type DoseFormValues = {
   id?: string;
@@ -31,6 +34,15 @@ export function DoseForm({
   const [state, formAction] = useActionState(action, undefined);
   const { isoRef, handleSubmit } = useLocalDatetimeSubmit("taken_at_local");
 
+  const knownMedication =
+    defaultValues?.medication_name && ALL_MEDICATIONS.includes(defaultValues.medication_name)
+      ? defaultValues.medication_name
+      : undefined;
+  const [selectedMedication, setSelectedMedication] = useState(
+    knownMedication ?? (defaultValues?.medication_name ? OTHER_VALUE : ""),
+  );
+  const isOther = selectedMedication === OTHER_VALUE;
+
   return (
     <form action={formAction} onSubmit={handleSubmit} className="space-y-4">
       <FormError message={state?.error} />
@@ -39,18 +51,43 @@ export function DoseForm({
       <input type="hidden" name="taken_at" ref={isoRef} />
 
       <div>
-        <label htmlFor="medication_name" className="block text-sm font-medium">
+        <label htmlFor="medication_select" className="block text-sm font-medium">
           Medicação
         </label>
-        <input
-          id="medication_name"
-          name="medication_name"
-          type="text"
-          required
-          placeholder="Ex.: Insulina NPH"
-          defaultValue={defaultValues?.medication_name}
+        <select
+          id="medication_select"
+          name={isOther ? undefined : "medication_name"}
+          required={!isOther}
+          value={selectedMedication}
+          onChange={(event) => setSelectedMedication(event.target.value)}
           className={inputClass}
-        />
+        >
+          <option value="" disabled>
+            Selecione...
+          </option>
+          {MEDICATION_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+          <option value={OTHER_VALUE}>Outro (especificar)</option>
+        </select>
+
+        {isOther && (
+          <input
+            type="text"
+            name="medication_name"
+            required
+            autoFocus
+            placeholder="Nome da medicação"
+            defaultValue={knownMedication ? "" : defaultValues?.medication_name}
+            className={`${inputClass} mt-2`}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
