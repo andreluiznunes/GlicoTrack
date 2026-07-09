@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { getUserAndProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { RedeemInviteForm } from "@/components/forms/RedeemInviteForm";
+import { formatMeasuredAt } from "@/lib/format";
+import { measurementContextLabel } from "@/lib/measurementContext";
 
 export default async function PacientePage() {
   const { user, profile } = await getUserAndProfile();
@@ -21,6 +24,13 @@ export default async function PacientePage() {
       .single();
     professionalName = professional?.full_name ?? null;
   }
+
+  const { data: recentMeasurements } = await supabase
+    .from("glucose_measurements")
+    .select("*")
+    .eq("patient_id", user!.id)
+    .order("measured_at", { ascending: false })
+    .limit(3);
 
   return (
     <div className="space-y-6">
@@ -49,10 +59,38 @@ export default async function PacientePage() {
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">Suas medições</h2>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          O registro de medições de glicemia chega em uma próxima etapa do projeto.
-        </p>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">Suas medições</h2>
+          <Link href="/paciente/medicoes/nova" className="text-sm text-sky-600 hover:underline">
+            + Nova medição
+          </Link>
+        </div>
+
+        {!recentMeasurements || recentMeasurements.length === 0 ? (
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Nenhuma medição registrada ainda.
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-slate-200 dark:divide-slate-800">
+            {recentMeasurements.map((m) => (
+              <li key={m.id} className="py-2">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
+                  {m.value_mg_dl} mg/dL
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {formatMeasuredAt(m.measured_at)} · {measurementContextLabel(m.context)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <Link
+          href="/paciente/medicoes"
+          className="mt-3 inline-block text-sm text-sky-600 hover:underline"
+        >
+          Ver todas as medições
+        </Link>
       </section>
     </div>
   );
