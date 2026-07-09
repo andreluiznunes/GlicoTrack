@@ -7,6 +7,8 @@ import { toDatetimeLocalBR } from "@/lib/format";
 export const metadata: Metadata = { title: "Nova medição — GlicoTrack" };
 
 export default function NovaMedicaoPage() {
+  const now = toDatetimeLocalBR(new Date().toISOString());
+
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div>
@@ -20,7 +22,8 @@ export default function NovaMedicaoPage() {
       <MeasurementForm
         action={createMeasurement}
         submitLabel="Registrar medição"
-        defaultValues={{ measured_at_local: toDatetimeLocalBR(new Date().toISOString()) }}
+        defaultValues={{ measured_at_local: now }}
+        maxMeasuredAtLocal={now}
       />
     </div>
   );

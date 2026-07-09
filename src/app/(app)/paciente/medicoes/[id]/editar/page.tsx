@@ -50,6 +50,7 @@ export default async function EditarMedicaoPage({
           context: measurement.context,
           notes: measurement.notes,
         }}
+        maxMeasuredAtLocal={toDatetimeLocalBR(new Date().toISOString())}
       />
     </div>
   );

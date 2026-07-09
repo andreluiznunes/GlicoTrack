@@ -22,10 +22,15 @@ export function MeasurementForm({
   action,
   submitLabel,
   defaultValues,
+  maxMeasuredAtLocal,
 }: {
   action: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
   submitLabel: string;
   defaultValues?: MeasurementFormValues;
+  // Limite do seletor de data/hora — só UX (evita escolher data futura no
+  // picker). A validação que realmente importa é o refine em measured_at na
+  // Server Action (src/actions/measurements.ts), que não confia no client.
+  maxMeasuredAtLocal: string;
 }) {
   const [state, formAction] = useActionState(action, undefined);
   const isoRef = useRef<HTMLInputElement>(null);
@@ -74,6 +79,7 @@ export function MeasurementForm({
           name="measured_at_local"
           type="datetime-local"
           required
+          max={maxMeasuredAtLocal}
           defaultValue={defaultValues?.measured_at_local}
           className={inputClass}
         />

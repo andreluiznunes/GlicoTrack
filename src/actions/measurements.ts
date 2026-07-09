@@ -20,7 +20,12 @@ const measurementSchema = z.object({
     .int("O valor deve ser um número inteiro.")
     .min(1, "O valor deve ser maior que zero.")
     .max(3000, "O valor deve ser no máximo 3000."),
-  measured_at: z.string().min(1, "Informe a data e hora da medição."),
+  measured_at: z
+    .string()
+    .min(1, "Informe a data e hora da medição.")
+    .refine((value) => new Date(value).getTime() <= Date.now(), {
+      message: "A data e hora da medição não podem estar no futuro.",
+    }),
   context: z.enum(MEASUREMENT_CONTEXT_VALUES, { message: "Selecione o momento da medição." }),
   notes: z.string().trim().optional(),
 });
