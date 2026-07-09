@@ -92,6 +92,23 @@ export default async function PacientePage() {
           Ver todas as medições
         </Link>
       </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
+          Outros registros
+        </h2>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          <Link href="/paciente/doses" className="text-sky-600 hover:underline">
+            Doses de medicação
+          </Link>
+          <Link href="/paciente/refeicoes" className="text-sky-600 hover:underline">
+            Refeições
+          </Link>
+          <Link href="/paciente/atividades" className="text-sky-600 hover:underline">
+            Atividades físicas
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

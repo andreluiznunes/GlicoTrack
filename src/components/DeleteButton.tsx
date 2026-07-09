@@ -1,13 +1,19 @@
 "use client";
 
-import { deleteMeasurement } from "@/actions/measurements";
-
-export function DeleteMeasurementButton({ id }: { id: string }) {
+export function DeleteButton({
+  action,
+  id,
+  confirmMessage = "Excluir este registro? Essa ação não pode ser desfeita.",
+}: {
+  action: (formData: FormData) => void | Promise<void>;
+  id: string;
+  confirmMessage?: string;
+}) {
   return (
     <form
-      action={deleteMeasurement}
+      action={action}
       onSubmit={(event) => {
-        if (!window.confirm("Excluir esta medição? Essa ação não pode ser desfeita.")) {
+        if (!window.confirm(confirmMessage)) {
           event.preventDefault();
         }
       }}

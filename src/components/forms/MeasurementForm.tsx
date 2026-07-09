@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState } from "react";
 import { MEASUREMENT_CONTEXTS } from "@/lib/measurementContext";
 import { SubmitButton } from "./SubmitButton";
 import { FormError } from "./FormError";
+import { useLocalDatetimeSubmit } from "./useLocalDatetimeSubmit";
 import type { ActionState } from "@/actions/measurements";
 import type { MeasurementContext } from "@/types/database";
 
@@ -33,19 +34,7 @@ export function MeasurementForm({
   maxMeasuredAtLocal: string;
 }) {
   const [state, formAction] = useActionState(action, undefined);
-  const isoRef = useRef<HTMLInputElement>(null);
-
-  // "measured_at_local" (datetime-local) é "naive" — sem timezone. Convertemos
-  // pra ISO aqui, no navegador, antes do submit, porque só o navegador sabe o
-  // timezone real do usuário (a Server Action roda no servidor, provavelmente
-  // em UTC, e interpretaria a string errado).
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    const form = event.currentTarget;
-    const localInput = form.elements.namedItem("measured_at_local") as HTMLInputElement | null;
-    if (localInput?.value && isoRef.current) {
-      isoRef.current.value = new Date(localInput.value).toISOString();
-    }
-  }
+  const { isoRef, handleSubmit } = useLocalDatetimeSubmit("measured_at_local");
 
   return (
     <form action={formAction} onSubmit={handleSubmit} className="space-y-4">
