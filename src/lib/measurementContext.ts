@@ -1,7 +1,7 @@
 import type { MeasurementContext } from "@/types/database";
 
 export const MEASUREMENT_CONTEXTS: { value: MeasurementContext; label: string }[] = [
-  { value: "jejum", label: "Jejum" },
+  { value: "jejum", label: "Jejum ao acordar" },
   { value: "antes_cafe", label: "Antes do café da manhã" },
   { value: "antes_almoco", label: "Antes do almoço" },
   { value: "antes_jantar", label: "Antes do jantar" },
