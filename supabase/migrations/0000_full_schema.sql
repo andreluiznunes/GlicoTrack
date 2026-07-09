@@ -279,7 +279,9 @@ create or replace function public.generate_invite_code(p_expires_in_hours intege
 returns text
 language plpgsql
 security definer
-set search_path = public, pg_temp
+-- gen_random_bytes vem do pgcrypto, que no Supabase fica instalado no schema
+-- "extensions" (nÃ£o em "public") â€” por isso search_path precisa incluÃ­-lo.
+set search_path = public, extensions, pg_temp
 as $$
 declare
   v_role public.user_role;
