@@ -1,4 +1,4 @@
-﻿-- GlicoTrack — schema completo (concatenação de 0001..0009)
+﻿-- GlicoTrack — schema completo (concatenação de 0001..0011)
 -- Gerado automaticamente: não editar diretamente, editar os arquivos numerados e reconcatenar.
 
 -- ============================================================
@@ -105,7 +105,7 @@ alter table public.patient_targets enable row level security;
 create table if not exists public.glucose_measurements (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid not null references public.profiles(id) on delete cascade,
-  value_mg_dl integer not null check (value_mg_dl > 0 and value_mg_dl < 1000),
+  value_mg_dl integer not null check (value_mg_dl > 0 and value_mg_dl <= 3000),
   measured_at timestamptz not null,
   context text not null check (context in (
     'jejum',
@@ -545,5 +545,57 @@ create policy "patient_notes_update" on public.patient_notes
 drop policy if exists "patient_notes_delete" on public.patient_notes;
 create policy "patient_notes_delete" on public.patient_notes
   for delete using (patient_id = auth.uid());
+
+
+-- ============================================================
+-- 0010_fix_generate_invite_code_search_path.sql
+-- ============================================================
+-- GlicoTrack â€” 0010: correÃ§Ã£o do search_path de generate_invite_code
+-- gen_random_bytes (do pgcrypto) fica no schema "extensions" no Supabase, nÃ£o
+-- em "public" â€” a funÃ§Ã£o original sÃ³ buscava em public/pg_temp e falhava com
+-- "function gen_random_bytes(integer) does not exist". Rode este arquivo se
+-- vocÃª jÃ¡ aplicou o 0000_full_schema.sql/0008 antes desta correÃ§Ã£o.
+create or replace function public.generate_invite_code(p_expires_in_hours integer default 72)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_role public.user_role;
+  v_code text;
+begin
+  select role into v_role from public.profiles where id = auth.uid();
+
+  if v_role is distinct from 'professional' then
+    raise exception 'Apenas profissionais podem gerar cÃ³digos de convite.';
+  end if;
+
+  v_code := upper(encode(gen_random_bytes(6), 'hex'));
+
+  insert into public.invite_codes (professional_id, code, expires_at)
+  values (auth.uid(), v_code, now() + (p_expires_in_hours || ' hours')::interval);
+
+  return v_code;
+end;
+$$;
+
+revoke all on function public.generate_invite_code(integer) from public;
+grant execute on function public.generate_invite_code(integer) to authenticated;
+
+
+-- ============================================================
+-- 0011_increase_max_glucose_value.sql
+-- ============================================================
+-- GlicoTrack â€” 0011: aumentar o limite mÃ¡ximo de value_mg_dl para 3000
+-- Existem casos clÃ­nicos reais de glicemia acima de 1000 mg/dL (o limite
+-- original era um sanity bound conservador demais). Rode este arquivo se vocÃª
+-- jÃ¡ aplicou o schema antes desta correÃ§Ã£o.
+alter table public.glucose_measurements
+  drop constraint if exists glucose_measurements_value_mg_dl_check;
+
+alter table public.glucose_measurements
+  add constraint glucose_measurements_value_mg_dl_check
+  check (value_mg_dl > 0 and value_mg_dl <= 3000);
 
 

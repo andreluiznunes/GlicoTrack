@@ -3,7 +3,7 @@
 create table if not exists public.glucose_measurements (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid not null references public.profiles(id) on delete cascade,
-  value_mg_dl integer not null check (value_mg_dl > 0 and value_mg_dl < 1000),
+  value_mg_dl integer not null check (value_mg_dl > 0 and value_mg_dl <= 3000),
   measured_at timestamptz not null,
   context text not null check (context in (
     'jejum',

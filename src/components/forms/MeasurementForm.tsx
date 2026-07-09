@@ -58,7 +58,7 @@ export function MeasurementForm({
           name="value_mg_dl"
           type="number"
           min={1}
-          max={999}
+          max={3000}
           required
           defaultValue={defaultValues?.value_mg_dl}
           className={inputClass}
