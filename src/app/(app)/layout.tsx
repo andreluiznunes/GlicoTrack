@@ -1,23 +1,9 @@
 import { getUserAndProfile } from "@/lib/auth";
 import { LogoutButton } from "@/components/LogoutButton";
-import { AppNav, type NavLink } from "@/components/AppNav";
-import { HomeIcon, DropletIcon, PillIcon, UtensilsIcon, ActivityIcon } from "@/components/icons";
-
-const PATIENT_LINKS: NavLink[] = [
-  { href: "/paciente", label: "Início", icon: HomeIcon, exact: true },
-  { href: "/paciente/medicoes", label: "Medições", icon: DropletIcon },
-  { href: "/paciente/doses", label: "Doses", icon: PillIcon },
-  { href: "/paciente/refeicoes", label: "Refeições", icon: UtensilsIcon },
-  { href: "/paciente/atividades", label: "Atividades", icon: ActivityIcon },
-];
-
-const PROFESSIONAL_LINKS: NavLink[] = [
-  { href: "/profissional", label: "Início", icon: HomeIcon, exact: true },
-];
+import { AppNav } from "@/components/AppNav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await getUserAndProfile();
-  const links = profile?.role === "professional" ? PROFESSIONAL_LINKS : PATIENT_LINKS;
   const roleLabel = profile?.role === "professional" ? "Profissional" : "Paciente";
   const roleBadgeClass =
     profile?.role === "professional"
@@ -46,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </header>
-      <AppNav links={links} />
+      <AppNav role={profile?.role} />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
     </div>
   );

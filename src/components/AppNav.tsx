@@ -3,18 +3,37 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
+import type { UserRole } from "@/types/database";
+import { HomeIcon, DropletIcon, PillIcon, UtensilsIcon, ActivityIcon } from "@/components/icons";
 
-export type NavLink = {
+type NavLink = {
   href: string;
   label: string;
-  icon?: ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   // true pro link de "Início" — só ativo em match exato, senão ficaria ativo
   // junto com qualquer sub-página (toda página do paciente começa com /paciente).
   exact?: boolean;
 };
 
-export function AppNav({ links }: { links: NavLink[] }) {
+// Definidos aqui dentro (não recebidos via prop) porque referências de
+// componente (os ícones) não podem atravessar a fronteira Server → Client
+// Component como prop — só dados serializáveis (por isso <AppNav> só recebe
+// "role", uma string, do layout.tsx).
+const PATIENT_LINKS: NavLink[] = [
+  { href: "/paciente", label: "Início", icon: HomeIcon, exact: true },
+  { href: "/paciente/medicoes", label: "Medições", icon: DropletIcon },
+  { href: "/paciente/doses", label: "Doses", icon: PillIcon },
+  { href: "/paciente/refeicoes", label: "Refeições", icon: UtensilsIcon },
+  { href: "/paciente/atividades", label: "Atividades", icon: ActivityIcon },
+];
+
+const PROFESSIONAL_LINKS: NavLink[] = [
+  { href: "/profissional", label: "Início", icon: HomeIcon, exact: true },
+];
+
+export function AppNav({ role }: { role?: UserRole }) {
   const pathname = usePathname();
+  const links = role === "professional" ? PROFESSIONAL_LINKS : PATIENT_LINKS;
 
   if (links.length <= 1) return null;
 
@@ -37,7 +56,7 @@ export function AppNav({ links }: { links: NavLink[] }) {
                   : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
-              {Icon && <Icon className="h-4 w-4" />}
+              <Icon className="h-4 w-4" />
               {link.label}
             </Link>
           );
