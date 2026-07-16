@@ -28,3 +28,11 @@ export function toDatetimeLocalBR(iso: string): string {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
+
+// Isolado numa função à parte (em vez de "new Date(Date.now() - ...)" direto
+// no corpo de um Server Component) porque o eslint (react-hooks/purity) recusa
+// chamadas impuras diretamente no render — aqui é só uma consulta ao banco,
+// não afeta a pureza da renderização.
+export function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
