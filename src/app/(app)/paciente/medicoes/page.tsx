@@ -59,6 +59,18 @@ export default async function MedicoesPage() {
         <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
           Evolução (últimos 90 dias)
         </h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {targetRow ? (
+            <>
+              Faixa definida pelo seu profissional:{" "}
+              <span className="font-medium text-slate-700 dark:text-slate-200">
+                {targetRow.min_mg_dl}–{targetRow.max_mg_dl} mg/dL
+              </span>
+            </>
+          ) : (
+            "Nenhuma faixa definida pelo seu profissional ainda."
+          )}
+        </p>
         {!recentMeasurements || recentMeasurements.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Sem medições nos últimos 90 dias.
