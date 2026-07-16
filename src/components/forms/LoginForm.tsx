@@ -36,10 +36,10 @@ export function LoginForm() {
       </div>
       <SubmitButton>Entrar</SubmitButton>
       <div className="flex justify-between text-sm">
-        <Link href="/cadastro" className="text-sky-600 hover:underline">
+        <Link href="/cadastro" className="text-teal-600 hover:underline">
           Criar conta
         </Link>
-        <Link href="/esqueci-senha" className="text-sky-600 hover:underline">
+        <Link href="/esqueci-senha" className="text-teal-600 hover:underline">
           Esqueci minha senha
         </Link>
       </div>

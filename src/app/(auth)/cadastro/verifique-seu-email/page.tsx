@@ -12,7 +12,7 @@ export default function VerifiqueSeuEmailPage() {
       </p>
       <p>
         Não recebeu? Verifique a caixa de spam ou{" "}
-        <Link href="/cadastro" className="text-sky-600 hover:underline">
+        <Link href="/cadastro" className="text-teal-600 hover:underline">
           tente se cadastrar novamente
         </Link>
         .

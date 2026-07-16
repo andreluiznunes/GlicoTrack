@@ -21,7 +21,7 @@ export default async function EditarRefeicaoPage({ params }: { params: Promise<{
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div>
-        <Link href="/paciente/refeicoes" className="text-sm text-sky-600 hover:underline">
+        <Link href="/paciente/refeicoes" className="text-sm text-teal-600 hover:underline">
           ← Voltar
         </Link>
         <h1 className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-50">

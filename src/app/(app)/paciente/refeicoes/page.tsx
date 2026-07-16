@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { deleteMeal } from "@/actions/meals";
 import { formatMeasuredAt } from "@/lib/format";
 import { DeleteButton } from "@/components/DeleteButton";
+import { Card } from "@/components/ui/Card";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 
 export const metadata: Metadata = { title: "Refeições — GlicoTrack" };
 
@@ -23,35 +25,30 @@ export default async function RefeicoesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/paciente" className="text-sm text-sky-600 hover:underline">
+          <Link href="/paciente" className="text-sm text-teal-600 hover:underline">
             ← Voltar
           </Link>
           <h1 className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-50">
             Refeições
           </h1>
         </div>
-        <Link
-          href="/paciente/refeicoes/nova"
-          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
-        >
-          + Nova refeição
-        </Link>
+        <ButtonLink href="/paciente/refeicoes/nova">+ Nova refeição</ButtonLink>
       </div>
 
       {!meals || meals.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 text-center dark:border-slate-800 dark:bg-slate-900">
+        <Card className="text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Nenhuma refeição registrada ainda.
           </p>
           <Link
             href="/paciente/refeicoes/nova"
-            className="mt-4 inline-block text-sm text-sky-600 hover:underline"
+            className="mt-4 inline-block text-sm text-teal-600 hover:underline"
           >
             Registrar primeira refeição
           </Link>
-        </div>
+        </Card>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+        <Card as="ul" padded={false} className="divide-y divide-slate-200 dark:divide-slate-800">
           {meals.map((m) => (
             <li key={m.id} className="flex items-start justify-between gap-4 p-4">
               <div>
@@ -66,7 +63,7 @@ export default async function RefeicoesPage() {
               <div className="flex shrink-0 gap-3">
                 <Link
                   href={`/paciente/refeicoes/${m.id}/editar`}
-                  className="text-sm text-sky-600 hover:underline"
+                  className="text-sm text-teal-600 hover:underline"
                 >
                   Editar
                 </Link>
@@ -78,7 +75,7 @@ export default async function RefeicoesPage() {
               </div>
             </li>
           ))}
-        </ul>
+        </Card>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { getUserAndProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { GenerateInviteCodeButton } from "@/components/forms/GenerateInviteCodeButton";
+import { Card } from "@/components/ui/Card";
 
 export default async function ProfissionalPage() {
   const { user, profile } = await getUserAndProfile();
@@ -31,7 +32,7 @@ export default async function ProfissionalPage() {
         <p className="text-sm text-slate-500 dark:text-slate-400">Área do profissional</p>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+      <Card>
         <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
           Convidar paciente
         </h2>
@@ -41,9 +42,9 @@ export default async function ProfissionalPage() {
         <div className="mt-4">
           <GenerateInviteCodeButton />
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+      <Card>
         <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
           Pacientes vinculados
         </h2>
@@ -63,7 +64,7 @@ export default async function ProfissionalPage() {
             ))}
           </ul>
         )}
-      </section>
+      </Card>
     </div>
   );
 }

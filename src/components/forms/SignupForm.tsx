@@ -63,7 +63,7 @@ export function SignupForm() {
         <input type="checkbox" name="termsAccepted" required className="mt-1" />
         <span>
           Li e aceito os{" "}
-          <Link href="/termos" className="text-sky-600 hover:underline" target="_blank">
+          <Link href="/termos" className="text-teal-600 hover:underline" target="_blank">
             termos de uso e a política de privacidade
           </Link>
           .
@@ -74,7 +74,7 @@ export function SignupForm() {
 
       <p className="text-center text-sm">
         Já tem conta?{" "}
-        <Link href="/login" className="text-sky-600 hover:underline">
+        <Link href="/login" className="text-teal-600 hover:underline">
           Entrar
         </Link>
       </p>
