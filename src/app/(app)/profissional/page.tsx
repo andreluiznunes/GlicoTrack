@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getUserAndProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { GenerateInviteCodeButton } from "@/components/forms/GenerateInviteCodeButton";
@@ -56,9 +57,12 @@ export default async function ProfissionalPage() {
           <ul className="mt-4 divide-y divide-slate-200 dark:divide-slate-800">
             {patients.map((p) => (
               <li key={p.id} className="py-3">
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
+                <Link
+                  href={`/profissional/pacientes/${p.id}`}
+                  className="text-sm font-medium text-teal-700 hover:underline dark:text-teal-400"
+                >
                   {p.full_name}
-                </p>
+                </Link>
                 <p className="text-sm text-slate-500 dark:text-slate-400">{p.email}</p>
               </li>
             ))}

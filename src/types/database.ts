@@ -88,11 +88,13 @@ export interface Database {
           min_mg_dl: number;
           max_mg_dl: number;
           notes?: string | null;
+          updated_at?: string;
         };
         Update: Partial<{
           min_mg_dl: number;
           max_mg_dl: number;
           notes: string | null;
+          updated_at: string;
         }>;
         Relationships: [];
       };
