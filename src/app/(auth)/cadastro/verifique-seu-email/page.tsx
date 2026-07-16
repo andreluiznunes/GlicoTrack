@@ -17,6 +17,11 @@ export default function VerifiqueSeuEmailPage() {
         </Link>
         .
       </p>
+      <p>
+        <Link href="/login" className="text-teal-600 hover:underline">
+          Voltar para o login
+        </Link>
+      </p>
     </div>
   );
 }
