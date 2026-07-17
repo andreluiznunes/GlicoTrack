@@ -6,6 +6,44 @@ import { Card } from "@/components/ui/Card";
 
 export default async function ProfissionalPage() {
   const { user, profile } = await getUserAndProfile();
+
+  if (profile!.approval_status !== "approved") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
+            Olá, {profile!.full_name}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Área do profissional</p>
+        </div>
+
+        <Card>
+          {profile!.approval_status === "pending" ? (
+            <>
+              <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
+                Aguardando aprovação
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Sua conta de profissional está aguardando aprovação de um administrador. Assim
+                que for aprovada, você poderá gerar convites e acompanhar pacientes.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-medium text-slate-900 dark:text-slate-50">
+                Cadastro não aprovado
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Seu cadastro como profissional não foi aprovado. Entre em contato com a equipe
+                para mais informações.
+              </p>
+            </>
+          )}
+        </Card>
+      </div>
+    );
+  }
+
   const supabase = await createClient();
 
   const { data: links } = await supabase

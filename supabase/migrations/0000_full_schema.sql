@@ -1,12 +1,12 @@
-﻿-- GlicoTrack — schema completo (concatenação de 0001..0011)
+-- GlicoTrack — schema completo (concatenação de 0001..0012)
 -- Gerado automaticamente: não editar diretamente, editar os arquivos numerados e reconcatenar.
 
 -- ============================================================
 -- 0001_extensions_enums.sql
 -- ============================================================
--- GlicoTrack â€” 0001: extensÃµes e tipos base
--- ExtensÃ£o necessÃ¡ria para gen_random_bytes() usado na geraÃ§Ã£o de cÃ³digos de convite.
--- gen_random_uuid() jÃ¡ vem no core do Postgres 13+ usado pelo Supabase, nÃ£o precisa de extensÃ£o.
+-- GlicoTrack — 0001: extensões e tipos base
+-- Extensão necessária para gen_random_bytes() usado na geração de códigos de convite.
+-- gen_random_uuid() já vem no core do Postgres 13+ usado pelo Supabase, não precisa de extensão.
 create extension if not exists "pgcrypto";
 
 do $$
@@ -20,9 +20,9 @@ end $$;
 -- ============================================================
 -- 0002_profiles.sql
 -- ============================================================
--- GlicoTrack â€” 0002: profiles
--- Um profile por usuÃ¡rio do Supabase Auth. role Ã© autodeclarado no cadastro
--- (decisÃ£o de MVP para clÃ­nica Ãºnica) e travado contra alteraÃ§Ã£o posterior
+-- GlicoTrack — 0002: profiles
+-- Um profile por usuário do Supabase Auth. role é autodeclarado no cadastro
+-- (decisão de MVP para clínica única) e travado contra alteração posterior
 -- pela trigger prevent_role_change (ver 0008).
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -39,9 +39,9 @@ alter table public.profiles enable row level security;
 -- ============================================================
 -- 0003_professional_patient_links.sql
 -- ============================================================
--- GlicoTrack â€” 0003: vÃ­nculo paciente-profissional
+-- GlicoTrack — 0003: vínculo paciente-profissional
 -- MVP: 1 profissional ativo por paciente (unique em patient_id).
--- Sem policy de INSERT direta: o vÃ­nculo sÃ³ Ã© criado pela RPC redeem_invite_code (ver 0008/0009).
+-- Sem policy de INSERT direta: o vínculo só é criado pela RPC redeem_invite_code (ver 0008/0009).
 create table if not exists public.professional_patient_links (
   id uuid primary key default gen_random_uuid(),
   professional_id uuid not null references public.profiles(id) on delete cascade,
@@ -59,8 +59,8 @@ alter table public.professional_patient_links enable row level security;
 -- ============================================================
 -- 0004_invite_codes.sql
 -- ============================================================
--- GlicoTrack â€” 0004: cÃ³digos de convite
--- Gerados e resgatados sÃ³ via RPC (generate_invite_code / redeem_invite_code, ver 0008),
+-- GlicoTrack — 0004: códigos de convite
+-- Gerados e resgatados só via RPC (generate_invite_code / redeem_invite_code, ver 0008),
 -- nunca por INSERT direto do client.
 create table if not exists public.invite_codes (
   id uuid primary key default gen_random_uuid(),
@@ -80,7 +80,7 @@ alter table public.invite_codes enable row level security;
 -- ============================================================
 -- 0005_patient_targets.sql
 -- ============================================================
--- GlicoTrack â€” 0005: metas/faixas de referÃªncia por paciente, definidas pelo profissional
+-- GlicoTrack — 0005: metas/faixas de referência por paciente, definidas pelo profissional
 create table if not exists public.patient_targets (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid not null references public.profiles(id) on delete cascade,
@@ -100,8 +100,8 @@ alter table public.patient_targets enable row level security;
 -- ============================================================
 -- 0006_glucose_measurements.sql
 -- ============================================================
--- GlicoTrack â€” 0006: registro principal de mediÃ§Ã£o de glicemia
--- context como text + check (em vez de enum Postgres) para facilitar evoluir as opÃ§Ãµes depois.
+-- GlicoTrack — 0006: registro principal de medição de glicemia
+-- context como text + check (em vez de enum Postgres) para facilitar evoluir as opções depois.
 create table if not exists public.glucose_measurements (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid not null references public.profiles(id) on delete cascade,
@@ -126,10 +126,10 @@ alter table public.glucose_measurements enable row level security;
 -- ============================================================
 -- 0007_medication_doses_meals_activities_notes.sql
 -- ============================================================
--- GlicoTrack â€” 0007: dados complementares (doses, refeiÃ§Ãµes, atividades, notas livres)
--- measurement_id Ã© opcional (dado pode ser associado ao dia, sem uma mediÃ§Ã£o especÃ­fica).
--- A integridade "measurement_id pertence ao mesmo patient_id" Ã© garantida por trigger (ver 0008),
--- pois RLS/FK nÃ£o cobrem isso.
+-- GlicoTrack — 0007: dados complementares (doses, refeições, atividades, notas livres)
+-- measurement_id é opcional (dado pode ser associado ao dia, sem uma medição específica).
+-- A integridade "measurement_id pertence ao mesmo patient_id" é garantida por trigger (ver 0008),
+-- pois RLS/FK não cobrem isso.
 create table if not exists public.medication_doses (
   id uuid primary key default gen_random_uuid(),
   patient_id uuid not null references public.profiles(id) on delete cascade,
@@ -183,12 +183,12 @@ alter table public.patient_notes enable row level security;
 -- ============================================================
 -- 0008_functions_triggers.sql
 -- ============================================================
--- GlicoTrack â€” 0008: funÃ§Ãµes e triggers
+-- GlicoTrack — 0008: funções e triggers
 
--- 1) Cria o profile automaticamente quando um usuÃ¡rio se cadastra no Supabase Auth.
--- role/full_name vÃªm de options.data no supabase.auth.signUp() (raw_user_meta_data).
--- Se "role" nÃ£o for um valor vÃ¡lido do enum, o cast falha e o cadastro inteiro Ã©
--- revertido â€” role Ã© obrigatÃ³rio por design, nÃ£o um valor opcional com default.
+-- 1) Cria o profile automaticamente quando um usuário se cadastra no Supabase Auth.
+-- role/full_name vêm de options.data no supabase.auth.signUp() (raw_user_meta_data).
+-- Se "role" não for um valor válido do enum, o cast falha e o cadastro inteiro é
+-- revertido — role é obrigatório por design, não um valor opcional com default.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -213,8 +213,8 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- 2) Impede que o prÃ³prio usuÃ¡rio troque seu role via UPDATE direto na tabela
--- (RLS de "dono edita o prÃ³prio registro" sozinha nÃ£o bloqueia isso).
+-- 2) Impede que o próprio usuário troque seu role via UPDATE direto na tabela
+-- (RLS de "dono edita o próprio registro" sozinha não bloqueia isso).
 create or replace function public.prevent_role_change()
 returns trigger
 language plpgsql
@@ -223,7 +223,7 @@ set search_path = public, pg_temp
 as $$
 begin
   if new.role <> old.role then
-    raise exception 'Alterar o papel (role) de um perfil nÃ£o Ã© permitido.';
+    raise exception 'Alterar o papel (role) de um perfil não é permitido.';
   end if;
   return new;
 end;
@@ -234,8 +234,8 @@ create trigger on_profiles_prevent_role_change
   before update on public.profiles
   for each row execute function public.prevent_role_change();
 
--- 3) Garante que measurement_id (em doses/refeiÃ§Ãµes/atividades) referencia uma
--- mediÃ§Ã£o do MESMO paciente da linha â€” RLS nÃ£o valida integridade cross-table.
+-- 3) Garante que measurement_id (em doses/refeições/atividades) referencia uma
+-- medição do MESMO paciente da linha — RLS não valida integridade cross-table.
 create or replace function public.validate_measurement_patient()
 returns trigger
 language plpgsql
@@ -251,7 +251,7 @@ begin
     where id = new.measurement_id;
 
     if v_patient_id is null or v_patient_id <> new.patient_id then
-      raise exception 'measurement_id nÃ£o pertence ao mesmo paciente.';
+      raise exception 'measurement_id não pertence ao mesmo paciente.';
     end if;
   end if;
   return new;
@@ -273,14 +273,14 @@ create trigger on_activities_validate_measurement
   before insert or update on public.activities
   for each row execute function public.validate_measurement_patient();
 
--- 4) RPC: profissional gera um cÃ³digo de convite (entropia real via gen_random_bytes,
--- nÃ£o sequencial). Validade default de 72h.
+-- 4) RPC: profissional gera um código de convite (entropia real via gen_random_bytes,
+-- não sequencial). Validade default de 72h.
 create or replace function public.generate_invite_code(p_expires_in_hours integer default 72)
 returns text
 language plpgsql
 security definer
 -- gen_random_bytes vem do pgcrypto, que no Supabase fica instalado no schema
--- "extensions" (nÃ£o em "public") â€” por isso search_path precisa incluÃ­-lo.
+-- "extensions" (não em "public") — por isso search_path precisa incluí-lo.
 set search_path = public, extensions, pg_temp
 as $$
 declare
@@ -290,7 +290,7 @@ begin
   select role into v_role from public.profiles where id = auth.uid();
 
   if v_role is distinct from 'professional' then
-    raise exception 'Apenas profissionais podem gerar cÃ³digos de convite.';
+    raise exception 'Apenas profissionais podem gerar códigos de convite.';
   end if;
 
   v_code := upper(encode(gen_random_bytes(6), 'hex'));
@@ -305,10 +305,10 @@ $$;
 revoke all on function public.generate_invite_code(integer) from public;
 grant execute on function public.generate_invite_code(integer) to authenticated;
 
--- 5) RPC: paciente resgata um cÃ³digo e cria o vÃ­nculo com o profissional.
--- AtÃ´mico (UPDATE ... WHERE used_by is null RETURNING) para evitar corrida de
--- resgate duplicado do mesmo cÃ³digo; recusa se o paciente jÃ¡ tem vÃ­nculo ativo
--- (MVP Ã© 1 profissional por paciente â€” desvincular antes de resgatar outro cÃ³digo).
+-- 5) RPC: paciente resgata um código e cria o vínculo com o profissional.
+-- Atômico (UPDATE ... WHERE used_by is null RETURNING) para evitar corrida de
+-- resgate duplicado do mesmo código; recusa se o paciente já tem vínculo ativo
+-- (MVP é 1 profissional por paciente — desvincular antes de resgatar outro código).
 create or replace function public.redeem_invite_code(p_code text)
 returns void
 language plpgsql
@@ -322,11 +322,11 @@ begin
   select role into v_role from public.profiles where id = auth.uid();
 
   if v_role is distinct from 'patient' then
-    raise exception 'Apenas pacientes podem resgatar cÃ³digos de convite.';
+    raise exception 'Apenas pacientes podem resgatar códigos de convite.';
   end if;
 
   if exists (select 1 from public.professional_patient_links where patient_id = auth.uid()) then
-    raise exception 'VocÃª jÃ¡ estÃ¡ vinculado a um profissional. Desvincule-se antes de resgatar um novo cÃ³digo.';
+    raise exception 'Você já está vinculado a um profissional. Desvincule-se antes de resgatar um novo código.';
   end if;
 
   update public.invite_codes
@@ -337,7 +337,7 @@ begin
   returning professional_id into v_professional_id;
 
   if v_professional_id is null then
-    raise exception 'CÃ³digo de convite invÃ¡lido, expirado ou jÃ¡ utilizado.';
+    raise exception 'Código de convite inválido, expirado ou já utilizado.';
   end if;
 
   insert into public.professional_patient_links (professional_id, patient_id)
@@ -352,8 +352,8 @@ grant execute on function public.redeem_invite_code(text) to authenticated;
 -- ============================================================
 -- 0009_rls_policies.sql
 -- ============================================================
--- GlicoTrack â€” 0009: polÃ­ticas de RLS
--- ConvenÃ§Ã£o: paciente CRUD nos prÃ³prios dados clÃ­nicos; profissional sÃ³ SELECT
+-- GlicoTrack — 0009: políticas de RLS
+-- Convenção: paciente CRUD nos próprios dados clínicos; profissional só SELECT
 -- nos dados de pacientes vinculados (exceto patient_targets, que ele define).
 
 -- profiles ------------------------------------------------------------
@@ -384,7 +384,7 @@ create policy "profiles_update_own" on public.profiles
   for update using (id = auth.uid()) with check (id = auth.uid());
 
 -- professional_patient_links -------------------------------------------
--- Sem policy de INSERT: vÃ­nculo sÃ³ Ã© criado pela RPC redeem_invite_code (security definer).
+-- Sem policy de INSERT: vínculo só é criado pela RPC redeem_invite_code (security definer).
 drop policy if exists "ppl_select_own" on public.professional_patient_links;
 create policy "ppl_select_own" on public.professional_patient_links
   for select using (professional_id = auth.uid() or patient_id = auth.uid());
@@ -394,7 +394,7 @@ create policy "ppl_delete_own" on public.professional_patient_links
   for delete using (professional_id = auth.uid() or patient_id = auth.uid());
 
 -- invite_codes -----------------------------------------------------------
--- Sem policy de INSERT/UPDATE: geraÃ§Ã£o e resgate sÃ³ via RPC (security definer).
+-- Sem policy de INSERT/UPDATE: geração e resgate só via RPC (security definer).
 drop policy if exists "invite_codes_select_own" on public.invite_codes;
 create policy "invite_codes_select_own" on public.invite_codes
   for select using (professional_id = auth.uid());
@@ -550,11 +550,11 @@ create policy "patient_notes_delete" on public.patient_notes
 -- ============================================================
 -- 0010_fix_generate_invite_code_search_path.sql
 -- ============================================================
--- GlicoTrack â€” 0010: correÃ§Ã£o do search_path de generate_invite_code
--- gen_random_bytes (do pgcrypto) fica no schema "extensions" no Supabase, nÃ£o
--- em "public" â€” a funÃ§Ã£o original sÃ³ buscava em public/pg_temp e falhava com
+-- GlicoTrack — 0010: correção do search_path de generate_invite_code
+-- gen_random_bytes (do pgcrypto) fica no schema "extensions" no Supabase, não
+-- em "public" — a função original só buscava em public/pg_temp e falhava com
 -- "function gen_random_bytes(integer) does not exist". Rode este arquivo se
--- vocÃª jÃ¡ aplicou o 0000_full_schema.sql/0008 antes desta correÃ§Ã£o.
+-- você já aplicou o 0000_full_schema.sql/0008 antes desta correção.
 create or replace function public.generate_invite_code(p_expires_in_hours integer default 72)
 returns text
 language plpgsql
@@ -568,7 +568,7 @@ begin
   select role into v_role from public.profiles where id = auth.uid();
 
   if v_role is distinct from 'professional' then
-    raise exception 'Apenas profissionais podem gerar cÃ³digos de convite.';
+    raise exception 'Apenas profissionais podem gerar códigos de convite.';
   end if;
 
   v_code := upper(encode(gen_random_bytes(6), 'hex'));
@@ -587,15 +587,205 @@ grant execute on function public.generate_invite_code(integer) to authenticated;
 -- ============================================================
 -- 0011_increase_max_glucose_value.sql
 -- ============================================================
--- GlicoTrack â€” 0011: aumentar o limite mÃ¡ximo de value_mg_dl para 3000
--- Existem casos clÃ­nicos reais de glicemia acima de 1000 mg/dL (o limite
--- original era um sanity bound conservador demais). Rode este arquivo se vocÃª
--- jÃ¡ aplicou o schema antes desta correÃ§Ã£o.
+-- GlicoTrack — 0011: aumentar o limite máximo de value_mg_dl para 3000
+-- Existem casos clínicos reais de glicemia acima de 1000 mg/dL (o limite
+-- original era um sanity bound conservador demais). Rode este arquivo se você
+-- já aplicou o schema antes desta correção.
 alter table public.glucose_measurements
   drop constraint if exists glucose_measurements_value_mg_dl_check;
 
 alter table public.glucose_measurements
   add constraint glucose_measurements_value_mg_dl_check
   check (value_mg_dl > 0 and value_mg_dl <= 3000);
+
+
+-- ============================================================
+-- 0012_professional_approval.sql
+-- ============================================================
+-- GlicoTrack — 0012: aprovação de profissionais por um administrador
+-- Hoje qualquer pessoa pode se autodeclarar "profissional" no cadastro e já
+-- sair gerando código de convite. A partir daqui, profissional nasce
+-- "pending" e só pode agir depois que um admin aprovar.
+
+-- 1) Colunas novas em profiles.
+alter table public.profiles
+  add column if not exists is_admin boolean not null default false,
+  add column if not exists approval_status text not null default 'approved'
+    check (approval_status in ('pending', 'approved', 'rejected'));
+
+-- 2) Trigger: impede que o próprio usuário mude seu approval_status ou
+-- is_admin via UPDATE direto (a RLS "dono edita o próprio registro",
+-- profiles_update_own, sozinha não bloqueia isso). approval_status só pode
+-- mudar via a RPC set_professional_approval (auth.uid() != old.id, já que é
+-- o admin alterando o profissional) ou edição direta no SQL Editor
+-- (auth.uid() é null nesse contexto). is_admin nunca muda por via
+-- autenticada — só edição direta no SQL Editor.
+create or replace function public.prevent_profile_privilege_self_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if new.approval_status <> old.approval_status and auth.uid() = old.id then
+    raise exception 'Você não pode alterar seu próprio status de aprovação.';
+  end if;
+
+  if new.is_admin <> old.is_admin and auth.uid() is not null then
+    raise exception 'Alterar is_admin não é permitido por essa via.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profiles_prevent_privilege_self_change on public.profiles;
+create trigger on_profiles_prevent_privilege_self_change
+  before update on public.profiles
+  for each row execute function public.prevent_profile_privilege_self_change();
+
+-- 3) handle_new_user: profissional nasce "pending", paciente nasce "approved".
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  insert into public.profiles (id, role, full_name, email, terms_accepted_at, approval_status)
+  values (
+    new.id,
+    (new.raw_user_meta_data->>'role')::public.user_role,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    new.email,
+    now(),
+    case
+      when (new.raw_user_meta_data->>'role') = 'professional' then 'pending'
+      else 'approved'
+    end
+  );
+  return new;
+end;
+$$;
+
+-- 4) generate_invite_code: exige approval_status = 'approved', não só role.
+create or replace function public.generate_invite_code(p_expires_in_hours integer default 72)
+returns text
+language plpgsql
+security definer
+-- gen_random_bytes vem do pgcrypto, que no Supabase fica instalado no schema
+-- "extensions" (não em "public") — por isso search_path precisa incluí-lo.
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_role public.user_role;
+  v_approval text;
+  v_code text;
+begin
+  select role, approval_status into v_role, v_approval
+  from public.profiles where id = auth.uid();
+
+  if v_role is distinct from 'professional' then
+    raise exception 'Apenas profissionais podem gerar códigos de convite.';
+  end if;
+
+  if v_approval is distinct from 'approved' then
+    raise exception 'Sua conta de profissional ainda não foi aprovada por um administrador.';
+  end if;
+
+  v_code := upper(encode(gen_random_bytes(6), 'hex'));
+
+  insert into public.invite_codes (professional_id, code, expires_at)
+  values (auth.uid(), v_code, now() + (p_expires_in_hours || ' hours')::interval);
+
+  return v_code;
+end;
+$$;
+
+revoke all on function public.generate_invite_code(integer) from public;
+grant execute on function public.generate_invite_code(integer) to authenticated;
+
+-- 5) patient_targets_insert/_update: defesa em profundidade — profissional
+-- só grava meta se também estiver aprovado (cobre o caso de ser rejeitado
+-- depois de já ter pacientes vinculados).
+drop policy if exists "patient_targets_insert" on public.patient_targets;
+create policy "patient_targets_insert" on public.patient_targets
+  for insert with check (
+    professional_id = auth.uid()
+    and exists (
+      select 1 from public.professional_patient_links l
+      where l.professional_id = auth.uid() and l.patient_id = patient_targets.patient_id
+    )
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.approval_status = 'approved'
+    )
+  );
+
+drop policy if exists "patient_targets_update" on public.patient_targets;
+create policy "patient_targets_update" on public.patient_targets
+  for update using (
+    professional_id = auth.uid()
+    and exists (
+      select 1 from public.professional_patient_links l
+      where l.professional_id = auth.uid() and l.patient_id = patient_targets.patient_id
+    )
+  )
+  with check (
+    professional_id = auth.uid()
+    and exists (
+      select 1 from public.professional_patient_links l
+      where l.professional_id = auth.uid() and l.patient_id = patient_targets.patient_id
+    )
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.approval_status = 'approved'
+    )
+  );
+
+-- 6) profiles: admin lê profissionais (pra tela de aprovação) — nada de
+-- paciente, é só o que a tela precisa.
+drop policy if exists "profiles_select_admin" on public.profiles;
+create policy "profiles_select_admin" on public.profiles
+  for select using (
+    role = 'professional'
+    and exists (
+      select 1 from public.profiles admin_p
+      where admin_p.id = auth.uid() and admin_p.is_admin = true
+    )
+  );
+
+-- 7) RPC: admin aprova/rejeita/revoga um profissional. Sem policy de UPDATE
+-- direta em profiles pra admin — tudo passa por aqui (security definer),
+-- mesmo padrão de generate_invite_code/redeem_invite_code.
+create or replace function public.set_professional_approval(
+  p_professional_id uuid,
+  p_status text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not exists (
+    select 1 from public.profiles where id = auth.uid() and is_admin = true
+  ) then
+    raise exception 'Apenas administradores podem alterar a aprovação de profissionais.';
+  end if;
+
+  if p_status not in ('pending', 'approved', 'rejected') then
+    raise exception 'Status inválido.';
+  end if;
+
+  update public.profiles
+     set approval_status = p_status
+   where id = p_professional_id
+     and role = 'professional';
+end;
+$$;
+
+revoke all on function public.set_professional_approval(uuid, text) from public;
+grant execute on function public.set_professional_approval(uuid, text) to authenticated;
 
 

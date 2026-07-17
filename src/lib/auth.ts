@@ -15,7 +15,7 @@ export const getUserAndProfile = cache(async () => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, role, full_name, email")
+    .select("id, role, full_name, email, is_admin, approval_status")
     .eq("id", user.id)
     .single();
 

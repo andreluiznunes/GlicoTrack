@@ -8,6 +8,8 @@
 
 export type UserRole = "patient" | "professional";
 
+export type ApprovalStatus = "pending" | "approved" | "rejected";
+
 export type MeasurementContext =
   | "jejum"
   | "antes_cafe"
@@ -30,6 +32,8 @@ export interface Database {
           full_name: string;
           email: string;
           terms_accepted_at: string;
+          is_admin: boolean;
+          approval_status: ApprovalStatus;
           created_at: string;
         };
         Insert: {
@@ -38,6 +42,8 @@ export interface Database {
           full_name: string;
           email: string;
           terms_accepted_at: string;
+          is_admin?: boolean;
+          approval_status?: ApprovalStatus;
           created_at?: string;
         };
         Update: Partial<{
@@ -229,6 +235,10 @@ export interface Database {
       };
       redeem_invite_code: {
         Args: { p_code: string };
+        Returns: void;
+      };
+      set_professional_approval: {
+        Args: { p_professional_id: string; p_status: ApprovalStatus };
         Returns: void;
       };
     };

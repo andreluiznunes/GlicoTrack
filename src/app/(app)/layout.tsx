@@ -4,9 +4,14 @@ import { AppNav } from "@/components/AppNav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await getUserAndProfile();
-  const roleLabel = profile?.role === "professional" ? "Profissional" : "Paciente";
-  const roleBadgeClass =
-    profile?.role === "professional"
+  const roleLabel = profile?.is_admin
+    ? "Admin"
+    : profile?.role === "professional"
+      ? "Profissional"
+      : "Paciente";
+  const roleBadgeClass = profile?.is_admin
+    ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"
+    : profile?.role === "professional"
       ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
       : "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300";
 
@@ -32,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </header>
-      <AppNav role={profile?.role} />
+      <AppNav role={profile?.role} isAdmin={profile?.is_admin} />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
     </div>
   );

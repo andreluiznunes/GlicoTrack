@@ -31,9 +31,13 @@ const PROFESSIONAL_LINKS: NavLink[] = [
   { href: "/profissional", label: "Início", icon: HomeIcon, exact: true },
 ];
 
-export function AppNav({ role }: { role?: UserRole }) {
+const ADMIN_LINKS: NavLink[] = [
+  { href: "/admin", label: "Início", icon: HomeIcon, exact: true },
+];
+
+export function AppNav({ role, isAdmin }: { role?: UserRole; isAdmin?: boolean }) {
   const pathname = usePathname();
-  const links = role === "professional" ? PROFESSIONAL_LINKS : PATIENT_LINKS;
+  const links = isAdmin ? ADMIN_LINKS : role === "professional" ? PROFESSIONAL_LINKS : PATIENT_LINKS;
 
   if (links.length <= 1) return null;
 

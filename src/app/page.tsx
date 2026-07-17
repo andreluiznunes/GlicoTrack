@@ -8,5 +8,9 @@ export default async function HomePage() {
     redirect("/login");
   }
 
+  if (profile.is_admin) {
+    redirect("/admin");
+  }
+
   redirect(profile.role === "professional" ? "/profissional" : "/paciente");
 }

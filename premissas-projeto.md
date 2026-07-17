@@ -1,7 +1,7 @@
 # Premissas do Projeto — App de Acompanhamento de Glicemia
 
 > Documento de definição de escopo, construído por entrevista. Serve como referência para decisões futuras de design e desenvolvimento.
-> Última atualização: 2026-07-03
+> Última atualização: 2026-07-17
 
 ## 1. Visão geral
 
@@ -24,10 +24,12 @@ O app deve atender pacientes com:
 
 | Papel | Descrição |
 |---|---|
-| **Paciente** | Cria sua própria conta, registra suas medições e dados relacionados. |
-| **Profissional de saúde** | Acompanha os pacientes vinculados a ele; define metas/faixas individuais para cada paciente; visualiza gráficos e relatórios. |
+| **Paciente** | Cria sua própria conta, registra suas medições e dados relacionados. Cadastro liberado imediatamente. |
+| **Profissional de saúde** | Acompanha os pacientes vinculados a ele; define metas/faixas individuais para cada paciente; visualiza gráficos e relatórios. Cadastro fica **pendente de aprovação** (ver abaixo). |
+| **Administrador** | Papel interno, sem cadastro público — a primeira conta é promovida manualmente pelo responsável técnico do projeto. Responsável por aprovar ou rejeitar cadastros de profissionais de saúde. |
 
 - **Vínculo paciente–profissional:** o paciente se cadastra de forma independente e insere um **código/convite** fornecido pelo profissional para se vincular a ele.
+- **Aprovação de profissional:** no cadastro, o usuário apenas *declara* que é profissional de saúde — não há validação de credencial nesse momento. Por isso, a conta nasce com status **pendente** e só pode gerar código de convite (e, por consequência, atender pacientes) depois que um administrador aprovar o cadastro pela área administrativa. Evita que qualquer pessoa se autodeclare profissional sem alguém validar.
 - **Escopo institucional (MVP):** pensado para **uma única clínica/consultório** — não é multi-tenant (múltiplas instituições isoladas) nesta fase.
 
 ## 4. Dados a registrar

@@ -11,7 +11,7 @@ diretamente no **SQL Editor** do painel do Supabase (não é `supabase db push`)
    `invite_codes`, `patient_targets`, `glucose_measurements`, `medication_doses`, `meals`,
    `activities`, `patient_notes` foram criadas, todas com RLS habilitada (ícone de cadeado).
 
-Os arquivos `0001_...sql` até `0009_...sql` são a mesma coisa, separados por assunto —
+Os arquivos `0001_...sql` até `0012_...sql` são a mesma coisa, separados por assunto —
 use-os só se quiser aplicar/entender por partes, ou se precisar reaplicar um pedaço
 específico depois de uma mudança futura. Todos os `create`/`drop policy` são idempotentes
 (podem ser rodados de novo sem erro), exceto `create type` e `create table`, que já
@@ -36,6 +36,21 @@ de como o Supabase gerar o link) e só então redireciona para dentro do app.
 
 Opcional: em **Authentication → Email Templates**, se algum dia tiver acesso, dá pra traduzir o
 texto dos e-mails para PT-BR (não precisa mexer no link/`href`).
+
+## Como promover a primeira conta a administrador
+
+Não existe cadastro público de administrador (proposital — evita que qualquer um vire admin).
+Depois de aplicar a migration `0012_professional_approval.sql` (ou o `0000_full_schema.sql`
+atualizado), cadastre normalmente uma conta pelo app (paciente ou profissional, não importa o
+papel) e depois rode no **SQL Editor**:
+
+```sql
+update public.profiles set is_admin = true where email = 'seu-email@exemplo.com';
+```
+
+Só funciona rodando direto no SQL Editor (como superusuário) — a aplicação em si nunca consegue
+setar `is_admin`, nem por essa conta nem por nenhuma RPC (bloqueado por trigger,
+`prevent_profile_privilege_self_change` em `0012_professional_approval.sql`).
 
 ## Depois de mudar o schema
 

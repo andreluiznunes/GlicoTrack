@@ -8,7 +8,7 @@ export default async function ProfissionalLayout({ children }: { children: React
     redirect("/login");
   }
 
-  if (profile.role !== "professional") {
+  if (profile.role !== "professional" || profile.is_admin) {
     redirect("/");
   }
 
