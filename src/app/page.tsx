@@ -5,6 +5,10 @@ export default async function HomePage() {
   const { user, profile } = await getUserAndProfile();
 
   if (!user || !profile) {
+    console.log("[HomePage] sem user ou sem profile, redirecionando pra /login:", {
+      hasUser: Boolean(user),
+      hasProfile: Boolean(profile),
+    });
     redirect("/login");
   }
 
