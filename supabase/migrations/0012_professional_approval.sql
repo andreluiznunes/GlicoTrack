@@ -141,14 +141,28 @@ create policy "patient_targets_update" on public.patient_targets
 
 -- 6) profiles: admin lê profissionais (pra tela de aprovação) — nada de
 -- paciente, é só o que a tela precisa.
+--
+-- A checagem "sou admin?" precisa passar por uma função security definer
+-- (current_user_is_admin), não por uma subquery direta em public.profiles
+-- dentro do USING: uma subquery contra a MESMA tabela que a policy protege
+-- faz o Postgres reavaliar todas as policies de profiles recursivamente
+-- (incluindo essa mesma), o que ele detecta e recusa com "infinite
+-- recursion detected in policy for relation profiles" (42P17) — a função
+-- security definer bypassa RLS na consulta interna e quebra o ciclo.
+create or replace function public.current_user_is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+
 drop policy if exists "profiles_select_admin" on public.profiles;
 create policy "profiles_select_admin" on public.profiles
   for select using (
-    role = 'professional'
-    and exists (
-      select 1 from public.profiles admin_p
-      where admin_p.id = auth.uid() and admin_p.is_admin = true
-    )
+    role = 'professional' and public.current_user_is_admin()
   );
 
 -- 7) RPC: admin aprova/rejeita/revoga um profissional. Sem policy de UPDATE

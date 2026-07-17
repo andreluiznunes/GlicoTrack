@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# harness/agent internal state (not part of the project)
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -60,31 +60,21 @@ export async function updateSession(request: NextRequest) {
   );
 
   // getUser() revalida contra o Auth server — nunca usar getSession() aqui.
+  // Sem sessão/cookie, isso retorna um error "Auth session missing!" que é
+  // esperado (não é log de erro real) — não logamos esse caso.
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  if (userError) {
-    console.error("[proxy] getUser() falhou:", {
-      pathname,
-      message: userError.message,
-      status: userError.status,
-      code: userError.code,
-    });
-  }
-
   if (!user && !isPublicPath(pathname)) {
-    console.log("[proxy] sem sessão em rota protegida, redirecionando pra /login:", pathname);
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
   if (user && REDIRECT_IF_AUTHENTICATED.includes(pathname)) {
-    console.log("[proxy] sessão ativa em rota pública de auth, redirecionando pra /:", pathname);
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
