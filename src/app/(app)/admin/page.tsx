@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { setProfessionalApproval } from "@/actions/admin";
 import { Card } from "@/components/ui/Card";
+import { ApprovalActionForm } from "@/components/forms/ApprovalActionForm";
 import type { ApprovalStatus } from "@/types/database";
 
 export const metadata: Metadata = { title: "Administração — GlicoTrack" };
@@ -17,38 +17,6 @@ const STATUS_BADGE_CLASS: Record<ApprovalStatus, string> = {
   approved: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300",
   rejected: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
 };
-
-function ApprovalActionButton({
-  professionalId,
-  status,
-  label,
-  variant = "primary",
-}: {
-  professionalId: string;
-  status: ApprovalStatus;
-  label: string;
-  variant?: "primary" | "danger" | "secondary";
-}) {
-  const classes =
-    variant === "primary"
-      ? "bg-teal-600 text-white hover:bg-teal-700"
-      : variant === "danger"
-        ? "bg-red-600 text-white hover:bg-red-700"
-        : "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800";
-
-  return (
-    <form action={setProfessionalApproval}>
-      <input type="hidden" name="professionalId" value={professionalId} />
-      <input type="hidden" name="status" value={status} />
-      <button
-        type="submit"
-        className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${classes}`}
-      >
-        {label}
-      </button>
-    </form>
-  );
-}
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -94,12 +62,12 @@ export default async function AdminPage() {
                   </span>
                   {p.approval_status === "pending" && (
                     <>
-                      <ApprovalActionButton
+                      <ApprovalActionForm
                         professionalId={p.id}
                         status="approved"
                         label="Aprovar"
                       />
-                      <ApprovalActionButton
+                      <ApprovalActionForm
                         professionalId={p.id}
                         status="rejected"
                         label="Rejeitar"
@@ -108,7 +76,7 @@ export default async function AdminPage() {
                     </>
                   )}
                   {p.approval_status === "approved" && (
-                    <ApprovalActionButton
+                    <ApprovalActionForm
                       professionalId={p.id}
                       status="pending"
                       label="Revogar"
@@ -116,7 +84,7 @@ export default async function AdminPage() {
                     />
                   )}
                   {p.approval_status === "rejected" && (
-                    <ApprovalActionButton
+                    <ApprovalActionForm
                       professionalId={p.id}
                       status="approved"
                       label="Aprovar"
